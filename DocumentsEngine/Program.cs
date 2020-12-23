@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System;
+using System.Threading.Tasks;
 
 namespace DocumentsEngine
 {
@@ -18,9 +21,15 @@ namespace DocumentsEngine
         ///     4. Good Luck!!!
         /// </summary>
         /// <param name="args"></param>
-        static void Main(string[] args)
+        static Task Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            using IHost host = CreateHostBuilder(args).Build();
+            return host.RunAsync();
         }
+
+        static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureServices((_, services) =>
+                    services.AddSingleton<IMemoryStorage, MemoryStorage>());
     }
 }
