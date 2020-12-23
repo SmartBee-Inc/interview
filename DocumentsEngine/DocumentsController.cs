@@ -24,16 +24,7 @@ namespace QuickStart.Controllers
         [HttpGet]
         public IEnumerable<Document> Get()
         {
-            Document doc = new Document()
-            {
-                Title = "T1",
-                TotalAmount = 20,
-            };
-            
-            
-            _ds.add(doc);
-            var list = _ds.listDocuments();
-            return list;
+            return _ds.listDocuments();
         }
 
         [HttpGet("{id}")]

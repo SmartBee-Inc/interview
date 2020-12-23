@@ -63,14 +63,6 @@ namespace DocumentsEngine
 
         public void add(Document document)
         {
-            Document doc = new Document()
-            {
-                Title = "T2",
-                TotalAmount = 30,
-            };
-
-            this._addRetry(doc);
-
             Task task = new Task(() => _addRetry(document) );
             task.Start();
         }
