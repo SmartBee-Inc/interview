@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using System;
 using System.Threading.Tasks;
 
@@ -21,15 +22,16 @@ namespace DocumentsEngine
         ///     4. Good Luck!!!
         /// </summary>
         /// <param name="args"></param>
-        static Task Main(string[] args)
+        public static void Main(string[] args)
         {
-            using IHost host = CreateHostBuilder(args).Build();
-            return host.RunAsync();
+            CreateHostBuilder(args).Build().Run();
         }
 
-        static IHostBuilder CreateHostBuilder(string[] args) =>
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureServices((_, services) =>
-                    services.AddSingleton<IMemoryStorage, MemoryStorage>());
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
     }
 }

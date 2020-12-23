@@ -2,12 +2,22 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace DocumentsEngine
 {
 
+    public interface IDocumentsService
+    {
+        public void add(Document document);
+        public void update(Document document);
+        public Document get(int Id);
+        public bool delete(int Id);
+        public List<Document> listDocuments();
+    }
 
-    public class DocumentsService
+
+    public class DocumentsService : IDocumentsService
     {
 
         private MemoryStorage _ms = new MemoryStorage();
@@ -25,7 +35,7 @@ namespace DocumentsEngine
 
         ~DocumentsService()
         {
-            _discountThread.Abort();
+            //_discountThread.Abort();
         }
 
         private void _addRetry(Document document)
@@ -40,42 +50,53 @@ namespace DocumentsEngine
                 success = true;
                 try
                 {
-                    _ms.SaveDocument(document);
+                    _ms.SaveDocument(newDocument);
                 }
-                catch (System.Exception e)
+                catch
                 {
                     success = false;
                     counter++;
-                    Thread.Sleep(counter * 100);
+                    Task.Delay(counter * 100);
                 }
             } while (success == false && counter < 20);
         }
 
         public void add(Document document)
         {
-            Thread thread = new Thread(new ThreadStart( () => _addRetry(document) ));
-            thread.Start(document);
+            Document doc = new Document()
+            {
+                Title = "T2",
+                TotalAmount = 30,
+            };
+
+            this._addRetry(doc);
+
+            Task task = new Task(() => _addRetry(document) );
+            task.Start();
+        }
+
+        public Document get(int Id)
+        {
+            Task<Document> task = new Task<Document>(() => { return _ms.GetDocument(Id); });
+            task.Start();
+            return task.Result;
         }
 
         public void update(Document document)
         {
-            // Can be done in a thread, but it's the same idea..
-            
-            var doc = _ms.GetDocument(document.Id);
-
-            // Since I can't add Update to the memory storage, two options, get, modify and reinsert, or just update the fields. 
-            // Since the fields I care about are primitives, I'll update the fields. Looks bad thought.
-            doc.TotalAmount = document.TotalAmount;
-            doc.Title = document.Title;
-            doc.Updated();
+            Task task = new Task(() => _ms.UpdateDocument(document));
+            task.Start();
         }
 
         public bool delete(int Id)
         {
-            return _ms.DeleteDocument(Id);
+            Task<bool> task = new Task<bool>(() => { return _ms.DeleteDocument(Id); });
+            task.Start();
+            return task.Result;
         }
 
         // In general this is the more interesting signature, it allows a "delete all that match the fields" implementation for example. 
+        // Not used
         public bool delete(Document document)
         {
             return _ms.DeleteDocument(document.Id);
@@ -83,7 +104,9 @@ namespace DocumentsEngine
 
         public List<Document> listDocuments()
         {
-            return _ms.GetAllDocuments();
+            Task<List<Document>> task = new Task<List<Document>>(() => { return _ms.GetAllDocuments(); });
+            task.Start();
+            return task.Result;
         }
 
     }

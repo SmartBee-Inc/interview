@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace DocumentsEngine
 {
@@ -26,18 +27,18 @@ namespace DocumentsEngine
             Random rnd = new Random();
             if (rnd.Next(1, 11) > 5)
             {
-                Thread.Sleep(1000);
-                // ToDo: Store in memory here
+                Task.Delay(1000);
 
                 keyMut.WaitOne();
                 document.Id = ++currentKey;
                 keyMut.ReleaseMutex();
-                //if (dataStore == null) new Exception(" dataStore == null in Save ");
                 _dataStore.Add(document.Id, document);
                 return;
+
             } // Else.. 
             throw new Exception("Failed to generate document");
         }
+
 
         public Document GetDocument(int id)
         {
@@ -50,6 +51,17 @@ namespace DocumentsEngine
         {
             return _dataStore.Remove(id);
         }
+
+        public void UpdateDocument(Document doc)
+        {
+            updateMut.WaitOne();
+            var oldDoc = this.GetDocument(doc.Id);
+            oldDoc.TotalAmount = doc.TotalAmount;
+            oldDoc.Title = doc.Title;
+            oldDoc.Updated();
+            updateMut.ReleaseMutex();
+        }
+
 
         // Signature? Shouldn't be List<Document> or similar.
         //public Document GetAllDocuments()

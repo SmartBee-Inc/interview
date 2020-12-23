@@ -8,6 +8,7 @@ namespace DocumentsEngine
     {
         public void SaveDocument(Document document);
         public Document GetDocument(int id);
+        public void UpdateDocument(Document doc);
         public List<Document> GetAllDocuments();
         public bool DeleteDocument(int id);
         public List<int> GetAllDocumentsIds();
