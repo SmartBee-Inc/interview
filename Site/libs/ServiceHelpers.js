@@ -341,10 +341,10 @@ function ServiceHelperTemplate() {
 
         // Fixing the problems with get and browser cach.
         if (url.indexOf("?") > -1) {
-            url += "&cachFix=" + Date.now();
+            //url += "&cachFix=" + Date.now();
         }
         else {
-            url += "?cachFix=" + Date.now();
+            //url += "?cachFix=" + Date.now();
         }
 
         if (_.isBoolean(isHttpsOrOptions)) {

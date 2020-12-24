@@ -1,0 +1,24 @@
+<div>
+    <h2>
+        {{actionType}} document:
+    </h2>
+
+    <div style="margin: 25px;">
+        Title: <br /><input style="width: 200px;" data-bind="value:Title" />
+    </div>
+
+    <div style="margin: 25px;">
+        Total Amount: <br /><input style="width: 200px;" data-bind="value:TotalAmount" type="number" />
+    </div>
+
+    <div style="margin: 25px;">
+        <!-- ko if:(ko.unwrap(saving) == true) -->
+        <img src="https://media1.giphy.com/media/3oEjI6SIIHBdRxXI40/200.gif"/>
+        <!-- /ko -->
+        <!-- ko if:(ko.unwrap(saving) == false)-->
+        <button data-bind="click:save">Save</button>
+        <!-- /ko -->
+    </div>
+
+
+</div>

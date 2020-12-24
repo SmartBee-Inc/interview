@@ -1,0 +1,24 @@
+<h2>Documents</h2>
+
+<a href="#document/new">Add</a>
+
+<br />
+
+<script type="text/template" id="docTemplate">
+    <div style="margin: 20px; box-shadow: 3px 5px #A8A8A8; padding: 25px 25px 25px 25px;  width: 250px; ">
+        
+        <div data-bind="text: Title"></div>
+        <div data-bind="text: TotalAmount"></div>
+
+        <div style="padding: 15px 0px 0px 0px; display: inline-block">
+        <a data-bind="attr: { href: '#document/edit/' + Id }">Edit</a>
+        <a href="javascript:void(0)" data-bind="click: () => app.rootVM.documentsVm.deleteDocument(Id);">Delete</a>
+        </div>
+    </div>
+</script>
+
+
+<div data-bind="template: { name: 'gridTemplate', data: {  itemTemplate: 'docTemplate', items: documentsList } }"></div>
+
+
+

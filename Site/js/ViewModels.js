@@ -1,25 +1,180 @@
 ﻿app.rootVM = {
     userInfo:ko.observable(),
     isLoggedIn: ko.observable(),
+    numberOfClicks : ko.observable(0),
+    
+    // The hooks do not work, so improvising
+    // And I found why the hools didn't work... 
+    currentPage: ko.observable("main"),
+    currentPageHandler:  $("body").on("pagechange",  (e, args) => { 
+        app.rootVM.currentPage(args.options.targetPage.pageId);
+    }),
+    // should update this instead on activate:
 
-    mainVm:{},
+    crrentNav: ko.observable("main"),
 
+    
+    mainVm: (function() {
+
+        var vm = {
+        };
+        
+        vm.activate = function(activationParams){
+            app.rootVM.crrentNav("main");
+            app.log("Main was activated");
+        };
+
+        vm.reactivate = function(){
+            app.rootVM.crrentNav("main");
+            app.log("Main was activated again.");
+        };
+
+        vm.deactivate = function(){
+            app.log("Main was deactiveted");
+        };        
+    })(),
+
+    documentsVm: (function() {
+        
+        var vm = {
+            documentsList: ko.observableArray([])
+        };
+
+        ServiceHelper.setServerUrl(app.documentAPI);
+        vm.loadDocuments = () => {
+            app.rootVM.infoDialogVM.startLoading("Loading documents data");
+            ServiceHelper.getPromise("/documents").then( (data) => {
+                vm.documentsList(data);
+                app.rootVM.infoDialogVM.stopLoading();
+            }, (error) => {
+                app.rootVM.infoDialogVM.stopLoading();
+                app.rootVM.infoDialogVM.openError("Encountered an error loading the decuments", "Error");
+            });
+        } 
+
+        vm.deleteDocument = function(id) {
+            ServiceHelper.deletePromise("/documents/" + (id)).then( (data) => {
+                vm.loadDocuments();
+            }, (error) => {
+                app.rootVM.infoDialogVM.openError("Encountered an error deleting the decument", "Error");
+            });
+        }
+
+        vm.newDocument = function() {
+            
+        }
+
+
+        vm.activate = function(activationParams){
+            app.rootVM.crrentNav("documents")
+            app.log("Documents was activated");
+            vm.loadDocuments();
+        };
+
+        vm.reactivate = function(){
+            app.log("Documents was activated again.");
+            vm.loadDocuments();
+        };
+
+        vm.deactivate = function(){
+            app.log("Documents was deactiveted");
+        };        
+
+        return vm;
+    })(),
+    
+    documentVm: (function() {
+        var vm = {
+            actionType:ko.observable(),
+            saving:ko.observable(false),
+
+            Id: null,
+            Title: ko.observable(""),
+            TotalAmount: ko.observable(0),
+
+            dirty: false,
+        };
+
+        vm.activate = function(activationParams){
+            app.rootVM.crrentNav("documents")
+            vm.saving(false);
+            vm.actionType(activationParams.actionType);
+            if (activationParams.actionType == "Edit") {
+                vm.Id = activationParams.Id;
+                app.rootVM.infoDialogVM.startLoading("Loading document data");
+                ServiceHelper.getPromise("/documents/" + vm.Id).then( (data) => {
+                    vm.Title(data.Title);
+                    vm.TotalAmount(data.TotalAmount);
+                    app.rootVM.infoDialogVM.stopLoading();
+                    this.dirty(false);
+                }, (error) => {
+                    app.rootVM.infoDialogVM.stopLoading();
+                    app.rootVM.infoDialogVM.openError("Encountered an error loading the decument", "Error");
+                });
+            }
+        };     
+        
+        vm.save = function(){
+            // Validate here
+            // If time, bottom: https://knockoutjs.com/documentation/extenders.html
+            if (isNaN(vm.TotalAmount()) || !vm.Title() ) {
+                app.rootVM.infoDialogVM.openInfo("User filling error..", "Error");
+                return;
+            }
+
+            vm.saving(true);
+            if (vm.actionType() == "Edit") {
+                ServiceHelper.putPromise("/documents/" + vm.Id, { 
+                    Id: vm.Id,
+                    Title: vm.Title(), 
+                    TotalAmount: vm.TotalAmount(),
+                    }).then( () => {
+                        location.hash = "documents"
+                }, (error) => {
+                    app.rootVM.infoDialogVM.openError("Encountered an error saving the decument", "Error");
+                    vm.saving(false);
+                });
+            }
+            if (vm.actionType() == "New") {
+                ServiceHelper.postPromise("/documents", { 
+                    Title: vm.Title(), 
+                    TotalAmount: vm.TotalAmount(),
+                    }).then( () => {
+                        location.hash = "documents"
+                }, (error) => {
+                    app.rootVM.infoDialogVM.openError("Encountered an error saving the decument", "Error");
+                    vm.saving(false);
+                });
+            }
+
+        };      
+        
+        vm.canDeactivate = function(canDeactivateParam){
+            
+            // Should be done via dirty flag, if data wasn't changed no need to confirm.
+           (app.rootVM.infoDialogVM.confirm("Are you sure?", "Don't go please")).then( () => canDeactivateParam.confirmDeactivate() );
+        };
+        return vm;
+
+
+    })(),
     examplesVm: (function(){
         var vm = {
             someText:ko.observable(),
         };
 
         vm.activate = function(activationParams){
-            app.log("Main was activated");
+            app.rootVM.crrentNav("examples")
+            app.log("Examples? was activated");
             vm.someText(activationParams.message);
         };
 
         vm.reactivate = function(){
-            app.log("Main was activated again.");
+            app.log("Examples? was activated again.");
         };
 
         vm.deactivate = function(){
-            app.log("Main was deactiveted");
+            app.log("Examples? was deactiveted");
         };
 
         vm.canDeactivate = function(canDeactivateParam){
@@ -27,7 +182,7 @@
         };
 
         vm.clicked = function(){
-            app.log("MainVM you clicked me.")
+            app.log("Examples? you clicked me.")
             location.hash = "document/new/" + vm.someText();
         };
 
@@ -47,6 +202,28 @@
         return vm;
     })(),
     
+    gridVm: (function() {
+
+        var vm = {
+            page: ko.observable(1),
+            pageSplit: ko.observable(10),
+            maxPages: ko.observable(0),
+
+        };
+
+        vm.paginate = function( dataObs ) {
+            var data = dataObs();
+            var length = data.length;
+            vm.maxPages(Math.ceil(length / vm.pageSplit()));
+            return data.slice((vm.page() - 1) * vm.pageSplit(), vm.page() * vm.pageSplit());
+            
+        }
+
+        return vm;
+
+
+    })(),
+
     infoDialogVM: (function () {
         var loadingCount = ko.observable(0);
         var loadingParams = ko.observableArray([]);

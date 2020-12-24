@@ -1,20 +1,47 @@
 <html>
-    <head>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-    </head>
-    <body>
 
-        <!-- This is the main app container -->
-        <div data-page-region="main_region" data-bind="control: { type: 'region', id: 'main_region'}">
+<head>
+    <link rel="stylesheet" href="global.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+        integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+</head>
+
+<body id="main-body">
+
+    <div class="global-wrapper">
+        <div class="global-header">
+            <div>
+                <a href="#documents" data-bind="style: { color:app.rootVM.crrentNav() == 'documents' ? 'red' : 'grey' }">documents</a>
+                <a href="#" data-bind="style: { color:  app.rootVM.crrentNav() == 'main' ? 'red' : 'grey' }">main</a>
+            </div>
+            <div>some title here {{app.rootVM.crrentNav}} {{app.rootVM.currentPage}}</div> 
+            <div>
+                <!-- ko if: app.rootVM.userInfo -->
+                {{ko.unwrap(app.rootVM.userInfo).UserName}}
+                <!-- /ko -->
+            </div>
         </div>
 
-         <!--
+
+
+        <!-- This is the main app container -->
+        <div data-page-region="main_region" class="main_region"
+            data-bind="control: { type: 'region', id: 'main_region'}">
+        </div>
+
+        <div class="global-footer">
+            Footer stuff
+        </div>
+
+    </div>
+    <!--
             | ============================= |
             |          Templates            |
             | ============================= |
         -->
-        <script type="text/template" id="loadingDialog">
+    <script type="text/template" id="loadingDialog">
             <div data-bind="control: { type: 'modal', isOpen: isLoading }" class="text-right fade" data-backdrop="static" data-keyboard="false">
                 <div class="modal-body">
                     <img src="https://media1.giphy.com/media/3oEjI6SIIHBdRxXI40/200.gif" style="float: right" />
@@ -31,13 +58,31 @@
             </div>
         </script>
 
-        <!--
+    <script type="text/template" id="gridTemplate">
+
+        <div>
+            <span style="margin: 20px;" data-bind="foreach: new Array(app.rootVM.gridVm.maxPages() )">
+                <span data-bind='text: $index()+1, click: () => app.rootVM.gridVm.page($index()+1)'>  </span>
+        </div>
+        <div class="grid-main-wrapper">
+                <!-- ko foreach: { data: app.rootVM.gridVm.paginate(items), as: 'item' } -->
+                <div data-bind="template: { name: $parent.itemTemplate, data: item }"></div>
+                <!-- /ko -->
+            </div>
+            <div>
+                <span style="margin: 20px;" data-bind="foreach: new Array(app.rootVM.gridVm.maxPages() )">
+                    <span data-bind='text: $index()+1, click: () => app.rootVM.gridVm.page($index()+1)'>  </span>
+            </div>
+    
+        </script>
+
+    <!--
             | ============================= |
             |       Page definisions        |
             | ============================= |
         -->
-        <div style="display:none;">
-            <div data-bind="control: {
+    <div style="display:none;">
+        <div data-bind="control: {
                 type: 'page', 
                 region: 'main_region', 
                 pageId: 'main',
@@ -46,9 +91,9 @@
                 src: 'parts/main.html'
             }">
 
-            </div>
-        
-            <div data-bind="control: {
+        </div>
+
+        <div data-bind="control: {
                 type: 'page', 
                 region: 'main_region', 
                 pageId: 'examples',
@@ -58,83 +103,116 @@
             }">
         </div>
 
-        <!--
+        <div data-bind="control: {
+                type: 'page', 
+                region: 'main_region', 
+                pageId: 'documents',
+                content: documentsVm,
+                animateOnReactivate:false,
+                src: 'parts/documents.html'
+            }">
+        </div>
+
+        <div data-bind="control: {
+            type: 'page', 
+            region: 'main_region', 
+            pageId: 'document',
+            content: documentVm,
+            animateOnReactivate:false,
+            src: 'parts/document.html'
+        }">
+        </div>
+
+    </div>
+
+    <!--
             | ============================= |
             |           PopUps              |
             | ============================= |
         -->
-        <div data-bind="template: { name: 'loadingDialog', data: {text: app.rootVM.infoDialogVM.loadingText, isLoading: app.rootVM.infoDialogVM.isLoading}}"></div>
+    <div
+        data-bind="template: { name: 'loadingDialog', data: {text: app.rootVM.infoDialogVM.loadingText, isLoading: app.rootVM.infoDialogVM.isLoading}}">
+    </div>
 
-        <!-- ko with: app.rootVM.infoDialogVM -->
-        <div data-sbTest-Role="infoDialogVM" data-bind="control: { type: 'modal', isOpen: isOpen }" class="text-right fade" data-backdrop="static" data-keyboard="true">
-            <div class="modal-body">
-                <!-- ko if: isTitleCloseButtonEnabled  -->
-                <button class="btn btn-danger" data-bind="click: closeDialog">X</button>
-                <!-- /ko -->
-                <span style="font-size: 20px" dir="rtl">
-                    <!-- ko if:$data.title -->
-                    {{title}}
-               
+    <!-- ko with: app.rootVM.infoDialogVM -->
+    <div data-sbTest-Role="infoDialogVM" data-bind="control: { type: 'modal', isOpen: isOpen }" class="text-right fade"
+        data-backdrop="static" data-keyboard="true">
+        <div class="modal-body">
+            <!-- ko if: isTitleCloseButtonEnabled  -->
+            <button class="btn btn-danger" data-bind="click: closeDialog">X</button>
+            <!-- /ko -->
+            <span style="font-size: 20px" dir="rtl">
+                <!-- ko if:$data.title -->
+                {{title}}
+
                 <!--/ko-->
                 <!-- ko ifnot:$data.title -->
-                {{localize("SmartBee popup title")}} 
+                {{localize("Popup Title")}}
                 <!--/ko-->
-                </span>
-                <div class="Border-Box With-Buttons" style="margin-top: 10px;">
-                    <!-- ko if: ko.unwrap($data.type) == "error" -->
-                    <span class="glyphicon glyphicon-ban-circle" style="display: block; float: right; font-size: 40px; color: red; vertical-align: middle"></span>
-                    <!-- /ko -->
-                    <!-- ko if: ko.unwrap($data.type) == "info" -->
-                    <span class="glyphicon glyphicon-info-sign" style="display: block; float: right; font-size: 40px; color: green; vertical-align: middle"></span>
-                    <!-- /ko -->
-                    <span style="width: 440px; display: block; float: right; margin-right: 10px; vertical-align: middle" data-bind="html:content"></span>
+            </span>
+            <div class="Border-Box With-Buttons" style="margin-top: 10px;">
+                <!-- ko if: ko.unwrap($data.type) == "error" -->
+                <span class="glyphicon glyphicon-ban-circle"
+                    style="display: block; float: right; font-size: 40px; color: red; vertical-align: middle"></span>
+                <!-- /ko -->
+                <!-- ko if: ko.unwrap($data.type) == "info" -->
+                <span class="glyphicon glyphicon-info-sign"
+                    style="display: block; float: right; font-size: 40px; color: green; vertical-align: middle"></span>
+                <!-- /ko -->
+                <span style="width: 440px; display: block; float: right; margin-right: 10px; vertical-align: middle"
+                    data-bind="html:content"></span>
 
-                    <div style="clear: both"></div>
-                    <br />
-                    <div class="pull-left">
-                        <!-- ko if: $data.commands -->
-                        <!-- ko foreach:commands-->
-                        <button data-sbTest-Role="infoDialogVMButton" data-sbTest-Id="OK" class="btn" style="min-width:80px" data-bind="css:{'btn-success':ko.unwrap($data.isDanger) !== true, 'btn-danger': ko.unwrap($data.isDanger) }, click:function(){ action(); if(autoClose){$parent.closeDialog();} }">{{text}}</button>
-                        <!-- /ko -->
-                        <!-- /ko -->
-                        <!-- ko if: $data.isDefaultCloseButtonEnabled -->
-                        <button data-sbTest-Role="infoDialogVMButton" data-sbTest-Id="Cancel" class="btn btn-danger" data-bind="click: function () { closeDialog(); }">{{localize("Close Msg")}}</button>
-                        <!-- /ko -->
-                    </div>
-                    <div style="clear: both"></div>
+                <div style="clear: both"></div>
+                <br />
+                <div class="pull-left">
+                    <!-- ko if: $data.commands -->
+                    <!-- ko foreach:commands-->
+                    <button data-sbTest-Role="infoDialogVMButton" data-sbTest-Id="OK" class="btn" style="min-width:80px"
+                        data-bind="css:{'btn-success':ko.unwrap($data.isDanger) !== true, 'btn-danger': ko.unwrap($data.isDanger) }, click:function(){ action(); if(autoClose){$parent.closeDialog();} }">{{text}}</button>
+                    <!-- /ko -->
+                    <!-- /ko -->
+                    <!-- ko if: $data.isDefaultCloseButtonEnabled -->
+                    <button data-sbTest-Role="infoDialogVMButton" data-sbTest-Id="Cancel" class="btn btn-danger"
+                        data-bind="click: function () { closeDialog(); }">{{localize("Close Msg")}}</button>
+                    <!-- /ko -->
                 </div>
+                <div style="clear: both"></div>
             </div>
         </div>
-        <!-- /ko -->
+    </div>
+    <!-- /ko -->
 
-         <!--
+    <!--
             | ============================= |
             |         References            |
             | ============================= |
         -->
-        <script src="libs/jquery-1.9.1.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-        <script src="libs/lodash.js"></script>
-        <script src="libs/backbone.js"></script>
-        <script src="libs/bootstrap.js"></script>
-        <script src="libs/knockout-3.4.2.js"></script>
+    <script src="libs/jquery-1.9.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+    <script src="libs/lodash.js"></script>
+    <script src="libs/backbone.js"></script>
+    <script src="libs/bootstrap.js"></script>
+    <script src="libs/knockout-3.4.2.js"></script>
 
-        <script src="libs/custom-binding-handlers.js"></script>
-        <script src="libs/ko-nodes-extensions.js"></script>
+    <script src="libs/custom-binding-handlers.js"></script>
+    <script src="libs/ko-nodes-extensions.js"></script>
 
-        <script src="libs/Application.js"></script>
-        <script src="libs/extended-application.js"></script>
-        <script src="libs/page.js"></script>
-        <script src="libs/page-managment.js"></script>
-        <script src="libs/controlsBinding.js"></script>
-        <script src="libs/controls.js"></script>
+    <script src="libs/Application.js"></script>
+    <script src="libs/extended-application.js"></script>
+    <script src="libs/page.js"></script>
+    <script src="libs/page-managment.js"></script>
+    <script src="libs/controlsBinding.js"></script>
+    <script src="libs/controls.js"></script>
 
-        <script src="libs/ServiceHelpers.js"></script>
-        
-        <script src="js/app-bootstrap.js"></script>
-        <script src="js/ViewModels.js"></script>
+    <script src="libs/ServiceHelpers.js"></script>
 
-        <script src="libs/localize-binding.js"></script>
-        <script src="localization/He.js"></script>
-    </body>
+    <script src="js/app-bootstrap.js"></script>
+    <script src="js/ViewModels.js"></script>
+
+    <script src="libs/localize-binding.js"></script>
+    <script src="localization/He.js"></script>
+</body>
+
 </html>

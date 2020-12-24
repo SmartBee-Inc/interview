@@ -88,7 +88,9 @@ app.extendRoutes({
     routes: {
         "(/)": "main",
         "examples": "examples",
-        "document/new/:type":"newDocument",
+        "document/new":"newDocument",
+        "document/edit/:id":"editDocument",
+        "documents":"documents",
         "*url":"pageNotFound"
     },
 
@@ -100,12 +102,29 @@ app.extendRoutes({
             message:"Hello World"
         });
     },
-    newDocument:function(type){
-        app.log("This code is not implemented.");
+    editDocument:function(id){
+        app.moveToPage("document", {
+            actionType: "Edit",
+            Id: id,
+        });
     },
+    newDocument:function(){
+        app.moveToPage("document", {
+            actionType: "New",
+        });
+    },
+    documents:function(){
+        app.moveToPage("documents", {
+            
+        });
+
+    },    
     pageNotFound:function(url){
         app.error("Page not found for url '" + url + "'");
     }
 });
+
+// !! 
+app.documentAPI = 'https://5fe443a48bf8af001766edf0.mockapi.io/api';
 
 Application.startup_log("app-bootstrap.js has finished loading.", true);

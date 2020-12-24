@@ -7,7 +7,7 @@ function changePage(oldPage, page, revese, transition, beforePageEnter) {
     isPageInChanging = true;
 	function triggerPageChanged() {
 		var pageChangedEvent = new $.Event("pagechange"),
-			triggerData = { options: { $fromOriginalPageDefinision: oldPage } };
+			triggerData = { options: { $fromOriginalPageDefinision: oldPage, targetPage: page } };
 
 		$("body").trigger(pageChangedEvent, triggerData);
 	}
